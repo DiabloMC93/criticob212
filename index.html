@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Accesos Venosos - Parte 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* Slate 950 */
+            color: #f1f5f9;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8); /* Slate 900 */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: rgba(51, 65, 85, 0.8);
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .correct {
+            background-color: #064e3b !important;
+            border-color: #10b981 !important;
+            color: #d1fae5 !important;
+        }
+
+        .incorrect {
+            background-color: #450a0a !important;
+            border-color: #ef4444 !important;
+            color: #fee2e2 !important;
+        }
+
+        #next-btn {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-2xl">
+        <!-- Pantalla del Test -->
+        <div id="quiz-screen">
+            <!-- Cabecera de Stats -->
+            <div class="flex justify-between items-end mb-8 px-2">
+                <div class="flex gap-4">
+                    <div class="glass-card px-5 py-3 rounded-2xl border-green-500/20 text-center min-w-[110px]">
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold block mb-1">Aciertos</span>
+                        <span id="score-correct" class="text-2xl font-bold text-green-400">0</span>
+                    </div>
+                    <div class="glass-card px-5 py-3 rounded-2xl border-red-500/20 text-center min-w-[110px]">
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold block mb-1">Errores</span>
+                        <span id="score-incorrect" class="text-2xl font-bold text-red-400">0</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span id="question-index" class="text-xs font-bold text-blue-400 uppercase tracking-tighter bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20">
+                        Pregunta 1 / 22
+                    </span>
+                </div>
+            </div>
+
+            <!-- Pregunta -->
+            <div class="glass-card p-8 md:p-10 rounded-3xl mb-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                
+                <h2 id="question-text" class="text-xl md:text-2xl font-medium mb-10 text-slate-100 leading-snug">
+                    Cargando pregunta...
+                </h2>
+                
+                <div id="options-container" class="grid gap-3">
+                    <!-- Opciones dinámicas -->
+                </div>
+            </div>
+            
+            <div class="flex justify-center">
+                <button id="next-btn" onclick="quiz.next()" class="hidden bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-2xl font-bold transition-all transform active:scale-95">
+                    Siguiente Pregunta
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="result-screen" class="hidden glass-card p-12 rounded-3xl text-center">
+            <div class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold mb-2 text-white">¡Parte 2 Completada!</h2>
+            <p class="text-slate-400 mb-10">Has finalizado el bloque de Catéter Swan Ganz y Cuidados Críticos.</p>
+            
+            <div class="grid grid-cols-2 gap-6 mb-12">
+                <div class="p-6 bg-slate-900/50 rounded-2xl border border-green-500/20">
+                    <p class="text-green-500 text-xs font-bold uppercase mb-2">Aciertos</p>
+                    <p id="final-correct" class="text-5xl font-bold text-green-400">0</p>
+                </div>
+                <div class="p-6 bg-slate-900/50 rounded-2xl border border-red-500/20">
+                    <p class="text-red-500 text-xs font-bold uppercase mb-2">Errores</p>
+                    <p id="final-incorrect" class="text-5xl font-bold text-red-400">0</p>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="w-full bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-2xl font-bold transition-all border border-slate-700">
+                Reiniciar esta parte
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "23. ¿Qué calibre tiene el Catéter Swan Ganz?", a: ["Calibre 6 French", "Calibre 5 French", "Calibre 8 French", "Calibre 7 French"], c: 3 },
+            { q: "24. ¿Cuánto mide el Catéter Swan Ganz?", a: ["80 cm", "100 cm", "110 cm", "150 cm"], c: 2 },
+            { q: "25. ¿Dónde se coloca el Catéter Swan Ganz?", a: ["Acceso central vena yugular interna o femoral", "Acceso central subclavia o femoral", "Acceso central femoral", "Acceso central vena yugular interna, subclavia o femoral"], c: 3 },
+            { q: "26. ¿Cuántas luces tiene el Catéter Swan Ganz?", a: ["2 amarilla, azul rojo", "Amarilla azul y rojo", "Amarilla azul y verde", "Azul verde negro"], c: 1 },
+            { q: "27. ¿Con qué se llena el balón del Catéter Swan Ganz?", a: ["Suero", "Agua", "Helio", "Aire"], c: 3 },
+            { q: "28. ¿De qué color es la luz distal del Catéter Swan Ganz?", a: ["Amarillo", "Azul", "Rojo", "Verde"], c: 0 },
+            { q: "29. ¿De qué color es la luz proximal del Catéter Swan Ganz?", a: ["Amarillo", "Azul", "Rojo", "Verde"], c: 1 },
+            { q: "30. ¿De qué color es el cable del termistor?", a: ["Amarillo", "Azul", "Rojo", "Verde"], c: 2 },
+            { q: "31. ¿Para qué sirve la luz distal?", a: ["Extraer sangre gases venosos mixtos", "PVC y GC, administrar sueros y medicación", "PCP", "Sensor de temperatura"], c: 0 },
+            { q: "32. ¿Para qué sirve la luz proximal?", a: ["Extraer sangre gases venosos mixtos", "PVC y GC, administrar sueros y medicación", "PCP", "Sensor de temperatura"], c: 1 },
+            { q: "33. ¿Para qué sirve la luz roja?", a: ["Extraer sangre gases venosos mixtos", "PVC y GC, administrar sueros y medicación", "PCP", "Sensor de temperatura"], c: 2 },
+            { q: "34. ¿Para qué sirve el cable del termistor?", a: ["Extraer sangre gases venosos mixtos", "PVC y GC, administrar sueros y medicación", "PCP", "Sensor de temperatura"], c: 3 },
+            { q: "35. ¿Cuál de las siguientes afirmaciones es correcta sobre las vías venosas centrales?", a: ["Se utilizan principalmente para administrar medicamentos irritantes", "Se insertan en venas periféricas de los brazos", "Pueden causar neumotórax como complicación", "Son adecuadas para infusiones de corta duración"], c: 2 },
+            { q: "36. ¿Cuál de los siguientes tipos de catéteres es adecuado para mediciones precisas de la presión venosa central?", a: ["Catéter periférico corto", "Catéter central de inserción periférica (PICC)", "Catéter de Swan-Ganz", "Catéter venoso central de inserción periférica (CVCIP)"], c: 2 },
+            { q: "37. ¿Cuál es una complicación potencial de la inserción de una vía venosa central?", a: ["Tromboflebitis superficial", "Hematoma localizado", "Infección local", "Trombosis venosa profunda"], c: 3 },
+            { q: "38. ¿Cuál de los siguientes dispositivos se utiliza comúnmente para administrar nutrición parenteral en la UCI?", a: ["Catéter periférico", "Catéter central de inserción periférica (PICC)", "Sondas nasogástricas", "Tubos de alimentación enteral"], c: 1 },
+            { q: "39. ¿Cuál es una ventaja de la administración de medicamentos a través de una vía venosa central?", a: ["Menor riesgo de infección", "Mayor comodidad para el paciente", "Acceso más rápido a la circulación sistémica", "Menor riesgo de extravasación"], c: 2 },
+            { q: "40. ¿Qué significa el término 'nutrición parenteral'?", a: ["Alimentación a través de sonda nasogástrica", "Alimentación a través de una vía venosa central", "Alimentación oral suplementaria", "Alimentación enteral"], c: 1 },
+            { q: "41. ¿Cuál es esencial para prevenir contaminación durante la inserción de una CVC?", a: ["Uso de guantes estériles", "Lavado de manos con agua y jabón", "Utilización de soluciones antisépticas", "Limpieza del área con alcohol al 70%"], c: 0 },
+            { q: "42. ¿Qué describe mejor la vía venosa central?", a: ["Se coloca en una vena periférica superficial", "Es adecuada para soluciones hipertónicas e irritantes", "Se inserta en una vena de gran calibre cerca del corazón", "Se utiliza solo para infusiones cortas"], c: 2 },
+            { q: "43. ¿Cuál es el propósito principal de una vía venosa periférica en la UCI?", a: ["Administrar medicamentos vasoactivos", "Proporcionar acceso para análisis de sangre", "Infundir soluciones nutritivas", "Monitorizar la presión venosa central"], c: 1 },
+            { q: "44. ¿Qué medida ayuda a prevenir infecciones asociadas con catéteres venosos?", a: ["Cambiar guantes antes de tocar el catéter", "Utilizar técnica aséptica durante la inserción", "Dejar el catéter expuesto al aire", "Evitar el uso de desinfectantes"], c: 1 }
+        ];
+
+        class Quiz {
+            constructor() {
+                this.currentIdx = 0;
+                this.correct = 0;
+                this.incorrect = 0;
+                this.answered = false;
+            }
+
+            init() {
+                this.renderQuestion();
+            }
+
+            renderQuestion() {
+                this.answered = false;
+                const q = questions[this.currentIdx];
+                document.getElementById('question-index').innerText = `Pregunta ${this.currentIdx + 1} / ${questions.length}`;
+                document.getElementById('question-text').innerText = q.q;
+                document.getElementById('next-btn').classList.add('hidden');
+                
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+
+                q.a.forEach((option, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn w-full text-left p-5 rounded-2xl font-medium text-slate-300';
+                    btn.innerText = option;
+                    btn.onclick = () => this.checkAnswer(idx, btn);
+                    container.appendChild(btn);
+                });
+            }
+
+            checkAnswer(idx, btn) {
+                if (this.answered) return;
+                this.answered = true;
+                
+                const correctIdx = questions[this.currentIdx].c;
+                const buttons = document.querySelectorAll('.option-btn');
+                
+                if (idx === correctIdx) {
+                    this.correct++;
+                    btn.classList.add('correct');
+                    document.getElementById('score-correct').innerText = this.correct;
+                } else {
+                    this.incorrect++;
+                    btn.classList.add('incorrect');
+                    buttons[correctIdx].classList.add('correct');
+                    document.getElementById('score-incorrect').innerText = this.incorrect;
+                }
+
+                buttons.forEach(b => b.disabled = true);
+                document.getElementById('next-btn').classList.remove('hidden');
+            }
+
+            next() {
+                this.currentIdx++;
+                if (this.currentIdx < questions.length) {
+                    this.renderQuestion();
+                } else {
+                    this.finish();
+                }
+            }
+
+            finish() {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                document.getElementById('final-correct').innerText = this.correct;
+                document.getElementById('final-incorrect').innerText = this.incorrect;
+            }
+        }
+
+        const quiz = new Quiz();
+        window.onload = () => quiz.init();
+    </script>
+</body>
+</html>
